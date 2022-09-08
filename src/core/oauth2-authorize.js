@@ -30,6 +30,14 @@ export default function authorize ( { auth, authActions, errActions, configs, au
       authActions.authorizeApplication(auth)
       return
 
+    case "x-googleServiceAccount":
+      authActions.authorizeGoogleServiceAccount(auth)
+      return
+
+    case "x-appleServiceAccount":
+      authActions.authorizeAppleServiceAccount(auth)
+      return
+
     case "authorizationCode":
     case "authorization_code":
       // OAS3

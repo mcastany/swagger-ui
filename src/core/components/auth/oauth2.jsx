@@ -22,10 +22,15 @@ export default class Oauth2 extends React.Component {
     let { name, schema, authorized, authSelectors } = this.props
     let auth = authorized && authorized.get(name)
     let authConfigs = authSelectors.getConfigs() || {}
+
     let username = auth && auth.get("username") || ""
     let clientId = auth && auth.get("clientId") || authConfigs.clientId || ""
     let clientSecret = auth && auth.get("clientSecret") || authConfigs.clientSecret || ""
     let passwordType = auth && auth.get("passwordType") || "basic"
+    let privateKey = auth && auth.get("privateKey") || ""
+    let serviceAccount = auth && auth.get("serviceAccount") || ""
+    let keyId = auth && auth.get("keyId") || ""
+    let issuerId = auth && auth.get("issuerId") || ""
     let scopes = auth && auth.get("scopes") || authConfigs.scopes || []
     if (typeof scopes === "string") {
       scopes = scopes.split(authConfigs.scopeSeparator || " ")
@@ -40,7 +45,11 @@ export default class Oauth2 extends React.Component {
       clientSecret: clientSecret,
       username: username,
       password: "",
-      passwordType: passwordType
+      passwordType: passwordType,
+      privateKey: privateKey,
+      serviceAccount: serviceAccount,
+      keyId: keyId,
+      issuerId: issuerId
     }
   }
 
@@ -57,6 +66,7 @@ export default class Oauth2 extends React.Component {
     let authConfigs = authSelectors.getConfigs()
 
     errActions.clear({authId: name,type: "auth", source: "auth"})
+    console.log('marcos', this.state)
     oauth2Authorize({
       auth: this.state,
       currentServer: oas3Selectors.serverEffectiveValue(oas3Selectors.selectedServer()),
@@ -127,6 +137,8 @@ export default class Oauth2 extends React.Component {
     // Auth type consts
     const AUTH_FLOW_IMPLICIT = "implicit"
     const AUTH_FLOW_PASSWORD = "password"
+    const AUTH_FLOW_GOOGLE = "x-googleServiceAccount"
+    const AUTH_FLOW_APPLE = "x-appleServiceAccount"
     const AUTH_FLOW_ACCESS_CODE = isOAS3() ? (oidcUrl ? "authorization_code" : "authorizationCode") : "accessCode"
     const AUTH_FLOW_APPLICATION = isOAS3() ? (oidcUrl ? "client_credentials" : "clientCredentials") : "application"
 
@@ -188,6 +200,72 @@ export default class Oauth2 extends React.Component {
                         <option value="basic">Authorization header</option>
                         <option value="request-body">Request body</option>
                       </select>
+                    </Col>
+                }
+              </Row>
+            </Row>
+        }
+        {
+          flow !== AUTH_FLOW_GOOGLE ? null
+            : <Row>
+              <Row>
+                <label htmlFor="oauth_service_account">Service Account:</label>
+                {
+                  isAuthorized ? 
+                    <input style={{ width: "100%" }}  id="oauth_service_account" value={ this.state.serviceAccount } disabled type="text" data-name="serviceAccount"/>
+                    : <Col tablet={10} desktop={10}>
+                      <input style={{ width: "100%" }} id="oauth_service_account" type="text" data-name="serviceAccount" onChange={ this.onInputChange } autoFocus/>
+                    </Col>
+                }
+              </Row>
+              {
+
+              }
+              <Row>
+                <label htmlFor="oauth_private_key">Private Key:</label>
+                {
+                  isAuthorized ? 
+                      <textarea value={this.state.privateKey} disabled rows="8"  style={{ border: "1px solid #d9d9d9;" }} id="oauth_private_key" data-name="privateKey"/>
+                    : <Col tablet={10} desktop={10}>
+                      <textarea rows="8"  style={{ border: "1px solid #d9d9d9;" }} id="oauth_private_key" data-name="privateKey" onChange={ this.onInputChange }/>
+                    </Col>
+                }
+              </Row>
+            </Row>
+        }
+        {
+          flow !== AUTH_FLOW_APPLE ? null
+            : <Row>
+              <Row>
+                <label htmlFor="oauth_key_id">Key ID:</label>
+                {
+                  isAuthorized ? 
+                    <input style={{ width: "100%" }}  id="oauth_key_id" value={ this.state.keyId } disabled type="text" data-name="keyId"/>
+                    : <Col tablet={10} desktop={10}>
+                      <input style={{ width: "100%" }} id="oauth_key_id" type="text" data-name="keyId" onChange={ this.onInputChange } autoFocus/>
+                    </Col>
+                }
+              </Row>
+              <Row>
+                <label htmlFor="oauth_issuer_id">Issuer ID:</label>
+                {
+                  isAuthorized ? 
+                    <input style={{ width: "100%" }}  id="oauth_issuer_id" value={ this.state.issuerId } disabled type="text" data-name="issuerId"/>
+                    : <Col tablet={10} desktop={10}>
+                      <input style={{ width: "100%" }} id="oauth_issuer_id" type="text" data-name="issuerId" onChange={ this.onInputChange } autoFocus/>
+                    </Col>
+                }
+              </Row>
+              {
+
+              }
+              <Row>
+                <label htmlFor="oauth_private_key">Private Key:</label>
+                {
+                  isAuthorized ? 
+                      <textarea value={this.state.privateKey} disabled rows="8"  style={{ border: "1px solid #d9d9d9;" }} id="oauth_private_key" data-name="privateKey"/>
+                    : <Col tablet={10} desktop={10}>
+                      <textarea rows="8"  style={{ border: "1px solid #d9d9d9;" }} id="oauth_private_key" data-name="privateKey" onChange={ this.onInputChange }/>
                     </Col>
                 }
               </Row>

@@ -1,5 +1,6 @@
 import parseUrl from "url-parse"
 import win from "core/window"
+import * as jose from "jose"
 import { btoa, buildFormData } from "core/utils"
 
 export const SHOW_AUTH_POPUP = "show_popup"
@@ -136,6 +137,65 @@ export const authorizeApplication = ( auth ) => ( { authActions } ) => {
 
   return authActions.authorizeRequest({body: buildFormData(form), name, url: schema.get("tokenUrl"), auth, headers })
 }
+
+export const authorizeGoogleServiceAccount = ( auth ) => ( { authActions } ) => {
+  let { schema, privateKey, serviceAccount, name } = auth
+  return jose.importPKCS8(privateKey.replaceAll("\\n", ""), "RS256").then((pk) => {
+    return new jose.SignJWT({ "scope": "https://www.googleapis.com/auth/androidpublisher" })
+      .setProtectedHeader({ alg: "RS256" })
+      .setIssuedAt()
+      .setIssuer(serviceAccount)
+      .setAudience("https://oauth2.googleapis.com/token")
+      .setExpirationTime("1h")
+      .sign(pk)
+      .then((jwt) => {
+        let form = {
+          grant_type: "urn:ietf:params:oauth:grant-type:jwt-bearer",
+          assertion: jwt
+        }
+      
+        return authActions.authorizeRequest({
+          body: buildFormData(form), 
+          name, 
+          url: schema.get("tokenUrl"), auth 
+        })
+      })
+    })
+}
+
+export const authorizeAppleServiceAccount = ( auth ) => ( { authActions } ) => {
+  let { issuerId, privateKey, keyId } = auth
+  
+  const j = jose
+  return j.importPKCS8(privateKey.replaceAll("\\n", ""), "ES256").then((pk) => {
+    return new j.SignJWT({})
+      .setProtectedHeader({ alg: "ES256", kid: keyId })
+      .setIssuedAt()
+      .setIssuer(issuerId)
+      .setAudience("appstoreconnect-v1")
+      .setExpirationTime("20m")
+      .sign(pk)
+      .then((token) => {
+        authActions.authorizeForStoreRequest({ token: { access_token: token }, auth })
+      })
+  }).catch((e) => {
+    authActions.authorizeForStoreRequest({ error: e })
+  })
+}
+
+
+export const authorizeForStoreRequest = ( data ) => ( { fn, getConfigs, authActions, errActions, oas3Selectors, specSelectors, authSelectors } ) => {
+  console.log('marcosasdads', data)
+  // eslint-disable-next-line no-unused-expressions
+  return !data.error ? 
+    authActions.authorizeOauth2WithPersistOption(data) :
+    errActions.newAuthErr( {
+      level: "error",
+      source: "auth",
+      message: data.error.message
+    } )
+}
+
 
 export const authorizeAccessCodeWithFormParams = ( { auth, redirectUrl } ) => ( { authActions } ) => {
   let { schema, name, clientId, clientSecret, codeVerifier } = auth

@@ -101,11 +101,6 @@ select[disabled] {
     border-color: #888;
 }
 
-textarea[disabled] {
-    background-color: #41444e;
-    color: #fff;
-}
-
 @keyframes shake
 {
     10%,
@@ -139,10 +134,8 @@ textarea
     font-size: 12px;
 
     width: 100%;
-    min-height: 280px;
     padding: 10px;
 
-    border: none;
     border-radius: 4px;
     outline: none;
     background: rgba($form-textarea-background-color,.8);

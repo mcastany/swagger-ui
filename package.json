@@ -71,6 +71,7 @@
     "dompurify": "=2.3.10",
     "ieee754": "^1.2.1",
     "immutable": "^3.x.x",
+    "jose": "=4.8.3",
     "js-file-download": "^0.4.12",
     "js-yaml": "=4.1.0",
     "lodash": "^4.17.21",
